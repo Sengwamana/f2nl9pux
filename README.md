@@ -70,16 +70,19 @@ The app is configured for a Heroku container deployment. No hosted app URL is av
 - **Public GitHub repo:** [Sengwamana/f2nl9pux](https://github.com/Sengwamana/f2nl9pux)
 - **Deployment:** Not deployed in this environment (pending). To deploy to Heroku, follow the instructions below.
 
-To deploy to Heroku (container stack), from the repository root after installing the Heroku CLI and authenticating:
+To deploy to Heroku (container stack), install Docker Engine and the Heroku CLI, make sure your Heroku account can create/run apps, then run these commands from the repository root:
 
 ```bash
-heroku create --stack container
-heroku container:push web --app APP_NAME
-heroku container:release web --app APP_NAME
-heroku open --app APP_NAME
+heroku login
+heroku container:login
+APP_NAME="choose-a-unique-app-name"
+heroku create "$APP_NAME" --stack container
+heroku container:push web --app "$APP_NAME"
+heroku container:release web --app "$APP_NAME"
+heroku open --app "$APP_NAME"
 ```
 
-Replace `APP_NAME` with the generated app name printed by `heroku create`. Add the verified public URL here after deployment. The container listens on Heroku's `PORT` environment variable. See [Heroku's container deployment guide](https://devcenter.heroku.com/articles/container-registry-and-runtime) for current platform steps.
+Choose an app name that is globally available on Heroku. The app URL is printed after creation and by `heroku open`. Verify it loads, then check the API health endpoint at `https://$APP_NAME.herokuapp.com/api/health`; add the verified public URL here after deployment. The container listens on Heroku's `PORT` environment variable. See [Heroku's container deployment guide](https://devcenter.heroku.com/articles/container-registry-and-runtime) for current platform steps.
 
 ## AI tooling
 
