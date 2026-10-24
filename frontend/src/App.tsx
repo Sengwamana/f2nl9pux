@@ -38,8 +38,8 @@ function Chart({ points }: { points: AnalysisPoint[] }) {
   }
 
   const width = 1120
-  const height = 330
-  const margin = { top: 20, right: 24, bottom: 42, left: 76 }
+  const height = 340
+  const margin = { top: 24, right: 32, bottom: 48, left: 80 }
   const plotWidth = width - margin.left - margin.right
   const plotHeight = height - margin.top - margin.bottom
   const maxValue = Math.max(...data.flatMap((point) => [point.forecast_mw ?? 0, point.actual_mw ?? 0]))
@@ -52,7 +52,7 @@ function Chart({ points }: { points: AnalysisPoint[] }) {
       .join(' ')
   const tickCount = 5
   const ticks = Array.from({ length: tickCount + 1 }, (_, index) => (ceiling / tickCount) * index)
-  const labelCount = Math.min(7, data.length)
+  const labelCount = Math.min(8, data.length)
   const labels = Array.from({ length: labelCount }, (_, index) => {
     const pointIndex = Math.round((index / Math.max(1, labelCount - 1)) * (data.length - 1))
     return { pointIndex, label: formatLocalTime(data[pointIndex].delivery_start, { year: undefined }) }
@@ -66,7 +66,7 @@ function Chart({ points }: { points: AnalysisPoint[] }) {
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-labelledby="chart-title chart-description"
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMid meet"
         >
           <title id="chart-title">Hourly wind forecast compared with actual generation</title>
           <desc id="chart-description">
@@ -87,7 +87,7 @@ function Chart({ points }: { points: AnalysisPoint[] }) {
               key={`${pointIndex}-${label}`}
               className="chart-x-label"
               x={x(pointIndex)}
-              y={height - 12}
+              y={height - 16}
               textAnchor={pointIndex === 0 ? 'start' : pointIndex === data.length - 1 ? 'end' : 'middle'}
             >
               {label}
@@ -95,7 +95,7 @@ function Chart({ points }: { points: AnalysisPoint[] }) {
           ))}
         </svg>
       </div>
-      <figcaption>Hourly average generation, MW · delivery timestamps shown in Europe/London</figcaption>
+      <figcaption>Hourly average generation (MW) · Delivery timestamps in Europe/London</figcaption>
     </figure>
   )
 }
@@ -238,25 +238,25 @@ export default function App() {
       <header className="topbar">
         <a className="brand" href="#top" aria-label="Gridbricks Wind Desk home">
           <span className="brand-mark" aria-hidden="true"><span /><span /><span /></span>
-          <span className="brand-copy"><strong>gridbricks</strong><small>ENERGY INTELLIGENCE</small></span>
+          <span className="brand-copy"><strong>Gridbricks</strong><small>WIND PROCUREMENT DESK</small></span>
         </a>
         <div className="topbar-right">
-          <span className="live-indicator"><span /> HISTORICAL PILOT</span>
+          <span className="live-indicator"><span /> PILOT · JANUARY 2026</span>
           <span className="topbar-divider" />
-          <span className="topbar-date">GB · JAN 2026</span>
+          <span className="topbar-date">Great Britain · Elexon BMRS</span>
         </div>
       </header>
 
       <main id="top" className="page-content">
         <section className="page-heading">
           <div>
-            <div className="eyebrow"><span className="eyebrow-line" /> DAY-AHEAD PROCUREMENT</div>
-            <h1>Wind forecast desk</h1>
-            <p className="page-intro">See what was forecast for delivery — and how it compared with observed generation.</p>
+            <div className="eyebrow"><span className="eyebrow-line" /> DAY-AHEAD PROCUREMENT PILOT</div>
+            <h1>Wind forecast vs actuals</h1>
+            <p className="page-intro">Inspect the latest eligible national wind forecast for each delivery hour and quantify its accuracy against observed generation.</p>
           </div>
           <div className="data-source-badge">
             <span className="source-dot" />
-            <span><strong>Elexon BMRS</strong><small>FUELHH · WINDFOR</small></span>
+            <span><strong>Elexon BMRS</strong><small>FUELHH (WIND) · WINDFOR</small></span>
           </div>
         </section>
 
@@ -310,11 +310,11 @@ export default function App() {
               <div className="section-intro">
                 <div className="section-kicker">PERFORMANCE SNAPSHOT</div>
                 <h2>Forecast accuracy</h2>
-                <p>{new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' }).format(new Date(`${report.period.start_date}T12:00:00`))} – {new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${report.period.end_date}T12:00:00`))}</p>
+                <p>{new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' }).format(new Date(`${report.period.start_date}T12:00:00`))} – {new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${report.period.end_date}T12:00:00`))} · Europe/London</p>
               </div>
               <div className="updated-at">
                 <span className="updated-indicator" />
-                {updatedAt ? `Retrieved ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(updatedAt)}` : 'Historical Elexon data'}
+                {updatedAt ? `Updated ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(updatedAt)}` : 'Historical Elexon data'}
               </div>
             </section>
 
@@ -323,25 +323,25 @@ export default function App() {
                 <MetricCard
                   label="Matched hours"
                   value={`${metrics.matched_pairs.toLocaleString('en-GB')} / ${metrics.expected_hours.toLocaleString('en-GB')}`}
-                  supporting="forecast + actual pairs"
+                  supporting="complete forecast–actual pairs"
                   tone="blue"
                 />
                 <MetricCard
                   label="Data coverage"
                   value={`${(metrics.coverage * 100).toFixed(0)}%`}
-                  supporting={`${report.status_counts.matched ?? 0} complete hourly intervals`}
+                  supporting={`${report.status_counts.matched ?? 0} intervals complete`}
                   tone="green"
                 />
                 <MetricCard
                   label="Mean absolute error"
                   value={formatMw(metrics.mae)}
-                  supporting="typical absolute forecast difference"
+                  supporting="average absolute deviation (MW)"
                   tone="amber"
                 />
                 <MetricCard
-                  label="Mean bias"
+                  label="Mean bias (forecast − actual)"
                   value={formatBias(metrics.mean_bias)}
-                  supporting={metrics.mean_bias == null ? 'not available' : metrics.mean_bias > 0 ? 'forecast averaged above actual' : metrics.mean_bias < 0 ? 'forecast averaged below actual' : 'forecast and actual averaged evenly'}
+                  supporting={metrics.mean_bias == null ? 'Not available' : metrics.mean_bias > 0 ? 'Forecast tends to over-predict' : metrics.mean_bias < 0 ? 'Forecast tends to under-predict' : 'Near-zero average bias'}
                   tone="violet"
                 />
               </section>
@@ -356,16 +356,16 @@ export default function App() {
 
             <section className="panel chart-panel">
               <div className="panel-heading">
-                <div><div className="section-kicker">GENERATION PROFILE</div><h2>Forecast vs actual</h2></div>
+                <div><div className="section-kicker">GENERATION PROFILE</div><h2>Forecast vs actual generation</h2><p>Hourly delivery intervals aligned to Elexon timestamps</p></div>
                 <div className="chart-legend" aria-label="Chart legend">
-                  <span><i className="legend-swatch legend-forecast" /> Forecast</span>
-                  <span><i className="legend-swatch legend-actual" /> Actual</span>
+                  <span><i className="legend-swatch legend-forecast" /> Forecast (WINDFOR)</span>
+                  <span><i className="legend-swatch legend-actual" /> Actual (FUELHH mean)</span>
                 </div>
               </div>
               {loading && <div className="inline-loading"><span className="loader loader-small" /> Updating analysis…</div>}
               <Chart points={report.points} />
               <div className="chart-footnote">
-                <span>Hourly resolution</span><span className="footnote-dot" /><span>Actual = mean of two half-hour FUELHH values</span>
+                <span>Hourly resolution</span><span className="footnote-dot" /><span>Actual = mean of two consecutive half-hour FUELHH average-MW values</span><span className="footnote-dot" /><span>Provisional cutoff: 10:00 Europe/London previous day</span>
               </div>
             </section>
 
@@ -391,7 +391,7 @@ export default function App() {
           </>
         )}
       </main>
-      <footer className="site-footer"><span>GRIDBRICKS · WIND PROCUREMENT PILOT</span><span>Analysis supports decisions; it does not calculate a complete procurement position.</span></footer>
+      <footer className="site-footer"><span>GRIDBRICKS · WIND PROCUREMENT PILOT · ELEXON BMRS</span><span>Wind-only analysis supports decisions; it does not calculate a complete procurement position.</span></footer>
     </div>
   )
 }
