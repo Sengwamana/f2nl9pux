@@ -68,6 +68,16 @@ function Chart({ points }: { points: AnalysisPoint[] }) {
           aria-labelledby="chart-title chart-description"
           preserveAspectRatio="xMidYMid meet"
         >
+          <defs>
+            <linearGradient id="forecastGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#60a5fa" />
+              <stop offset="100%" stopColor="#2563eb" />
+            </linearGradient>
+            <linearGradient id="actualGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#34d399" />
+              <stop offset="100%" stopColor="#10b981" />
+            </linearGradient>
+          </defs>
           <title id="chart-title">Hourly wind forecast compared with actual generation</title>
           <desc id="chart-description">
             {data.length} hourly observations. The blue line is the forecast and the green line is actual generation.
@@ -143,7 +153,7 @@ function AnalysisTable({ points }: { points: AnalysisPoint[] }) {
               <th scope="col">Actual</th>
               <th scope="col">Error</th>
               <th scope="col">Forecast issue</th>
-              <th scope="col">Coverage</th>
+              <th scope="col">Match status</th>
             </tr>
           </thead>
           <tbody>
@@ -192,7 +202,6 @@ export default function App() {
   const [report, setReport] = useState<AnalysisReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -201,7 +210,6 @@ export default function App() {
     fetchAnalysis(request, controller.signal)
       .then((result) => {
         setReport(result)
-        setUpdatedAt(new Date())
       })
       .catch((reason: unknown) => {
         if (reason instanceof DOMException && reason.name === 'AbortError') return
@@ -231,7 +239,8 @@ export default function App() {
   }
 
   const metrics = report?.metrics
-  const cutoffLabel = `${String(request.cutoffHour).padStart(2, '0')}:00 Europe/London, previous day`
+  const appliedCutoffHour = report?.decision_rule.cutoff_hour ?? request.cutoffHour
+  const cutoffLabel = `${String(appliedCutoffHour).padStart(2, '0')}:00 Europe/London on the previous day`
 
   return (
     <div className="app-shell">
@@ -241,7 +250,7 @@ export default function App() {
           <span className="brand-copy"><strong>Gridbricks</strong><small>WIND PROCUREMENT DESK</small></span>
         </a>
         <div className="topbar-right">
-          <span className="live-indicator"><span /> PILOT · JANUARY 2026</span>
+          <span className="period-badge"><span /> HISTORICAL PILOT · JANUARY 2026</span>
           <span className="topbar-divider" />
           <span className="topbar-date">Great Britain · Elexon BMRS</span>
         </div>
@@ -285,7 +294,7 @@ export default function App() {
           </form>
           <div className="controls-footnote">
             <span className="info-icon" aria-hidden="true">i</span>
-            <span>Uses the latest forecast published by {cutoffLabel}. This cutoff is a working assumption, not a confirmed market gate.</span>
+            <span>The analysis below uses the latest forecast published by {cutoffLabel}. This is a working assumption, not a confirmed market gate.</span>
           </div>
         </section>
 
@@ -304,7 +313,7 @@ export default function App() {
           </section>
         )}
 
-        {!loading && !error && report && (
+        {!error && report && (
           <>
             <section className="summary-row" aria-label="Analysis summary">
               <div className="section-intro">
@@ -312,9 +321,9 @@ export default function App() {
                 <h2>Forecast accuracy</h2>
                 <p>{new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' }).format(new Date(`${report.period.start_date}T12:00:00`))} – {new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(`${report.period.end_date}T12:00:00`))} · Europe/London</p>
               </div>
-              <div className="updated-at">
-                <span className="updated-indicator" />
-                {updatedAt ? `Updated ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit' }).format(updatedAt)}` : 'Historical Elexon data'}
+              <div className="sample-context">
+                <span className="sample-context-mark" aria-hidden="true">H</span>
+                Historical Elexon sample
               </div>
             </section>
 
@@ -329,13 +338,13 @@ export default function App() {
                 <MetricCard
                   label="Data coverage"
                   value={`${(metrics.coverage * 100).toFixed(0)}%`}
-                  supporting={`${report.status_counts.matched ?? 0} intervals complete`}
+                  supporting={`${metrics.expected_hours.toLocaleString('en-GB')} expected hours in range`}
                   tone="green"
                 />
                 <MetricCard
                   label="Mean absolute error"
                   value={formatMw(metrics.mae)}
-                  supporting="average absolute deviation (MW)"
+                  supporting="mean absolute error across matched hours"
                   tone="amber"
                 />
                 <MetricCard
@@ -365,7 +374,7 @@ export default function App() {
               {loading && <div className="inline-loading"><span className="loader loader-small" /> Updating analysis…</div>}
               <Chart points={report.points} />
               <div className="chart-footnote">
-                <span>Hourly resolution</span><span className="footnote-dot" /><span>Actual = mean of two consecutive half-hour FUELHH average-MW values</span><span className="footnote-dot" /><span>Provisional cutoff: 10:00 Europe/London previous day</span>
+                <span>Hourly resolution</span><span className="footnote-dot" /><span>Actual = mean of two consecutive half-hour FUELHH average-MW values</span><span className="footnote-dot" /><span>{report.decision_rule.description} (provisional assumption)</span>
               </div>
             </section>
 
@@ -385,7 +394,10 @@ export default function App() {
               <div>
                 <strong>How to read this analysis</strong>
                 <p>Positive bias means the forecast was higher than observed generation. Elexon’s wind outturn excludes embedded generation and some unmetered wind farms, so these figures represent Elexon-reported monitored GB wind rather than all wind generation.</p>
-                <a href="https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/WINDFOR/stream" target="_blank" rel="noreferrer">Elexon dataset documentation <span aria-hidden="true">↗</span></a>
+                <div className="source-links">
+                  <a href="https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/WINDFOR/stream" target="_blank" rel="noreferrer">WINDFOR documentation <span aria-hidden="true">↗</span></a>
+                  <a href="https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/FUELHH/stream" target="_blank" rel="noreferrer">FUELHH documentation <span aria-hidden="true">↗</span></a>
+                </div>
               </div>
             </section>
           </>

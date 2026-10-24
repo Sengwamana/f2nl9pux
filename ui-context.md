@@ -14,7 +14,7 @@ The primary user is a UK utility day-ahead procurement team member. Their reques
 
 ### Recommended design direction, not an existing design
 
-The initial React dashboard is implemented in `frontend/src/App.tsx` and `frontend/src/styles.css`. No screenshot, brand guide, or design reference was provided; this layout is a pilot implementation subject to product review:
+The React dashboard is implemented in `frontend/src/App.tsx` and `frontend/src/styles.css`. No brand guide or design reference was provided. The current pilot uses a restrained slate-and-teal palette, dark navigation bar, white metric panels, and explicit historical-data labels; continue to treat these as product choices subject to review:
 
 1. **Decision context:** selected delivery date, hourly delivery range, provisional decision cutoff (10:00 Europe/London on the previous day), and timezone.
 2. **Forecast status:** latest eligible forecast publication time and forecast generation for each hourly interval.
@@ -34,7 +34,7 @@ The dashboard includes these elements in a single responsive view. The cutoff re
 
 ## Visual hierarchy and accessibility
 
-No typography, brand palette, or component library was supplied. The initial page uses a dark navy/teal palette, CSS layout, semantic headings, labeled controls, a chart summary, and an interval table. Continue to follow these accessibility recommendations:
+No typography, brand palette, or component library was supplied. The page uses a dark slate header, teal accent, neutral surfaces, consistent borders, and restrained shadows. The chart and table use separate forecast/actual labels and colors. Continue to follow these accessibility recommendations:
 
 - Prioritize delivery date, latest eligible publication, forecast level, and error context over decorative elements.
 - Use consistent units and explicit timezone labels; distinguish forecast and actual by both labels and visual treatment, not color alone.
