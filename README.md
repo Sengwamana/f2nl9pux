@@ -65,7 +65,7 @@ Open `http://localhost:8000`. The container builds the React app and serves it a
 
 ## Deployment
 
-The app is configured for a Heroku container deployment. No hosted app URL is available yet because Docker and an authenticated Heroku CLI were unavailable when the image was prepared. The container serves the API and built frontend from the same process.
+The app is configured for deployment on Heroku (container stack) or Vercel. The container serves the API and built frontend from the same process. A public deployment URL was not created in this environment because the Heroku account requires verification/payment info to create apps.
 
 - **Public GitHub repo:** [Sengwamana/f2nl9pux](https://github.com/Sengwamana/f2nl9pux)
 - **Deployment:** Not deployed in this environment (pending). To deploy to Heroku, follow the instructions below.
