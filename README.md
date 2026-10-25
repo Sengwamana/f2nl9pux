@@ -68,7 +68,8 @@ Open `http://localhost:8000`. The container builds the React app and serves it a
 The app is configured for deployment on Heroku (container stack) or Vercel. The container serves the API and built frontend from the same process. A public deployment URL was not created in this environment because the Heroku account requires verification/payment info to create apps.
 
 - **Public GitHub repo:** [Sengwamana/f2nl9pux](https://github.com/Sengwamana/f2nl9pux)
-- **Deployment:** Not deployed in this environment (pending). To deploy to Heroku, follow the instructions below.
+- **Deployed app (Vercel):** https://gridbricks-wind-fawn.vercel.app
+- **Deployment:** Deployed to Vercel (frontend + API served together). API is limited to January 2026. For container deployment on Heroku, see instructions below.
 
 To deploy to Heroku (container stack), install Docker Engine and the Heroku CLI, make sure your Heroku account can create/run apps, then run these commands from the repository root:
 
